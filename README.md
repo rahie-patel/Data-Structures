@@ -1,2 +1,2 @@
 # Data-Structures
-Various projects done this year(Rutgers computer science)
+Various projects done throughout this semester (Rutgers New Brunswick Computer Science)
