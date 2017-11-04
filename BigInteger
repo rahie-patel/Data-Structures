@@ -1,0 +1,382 @@
+package math;
+
+/**
+ * This class encapsulates a BigInteger, i.e. a positive or negative integer with 
+ * any number of digits, which overcomes the computer storage length limitation of 
+ * an integer.
+ * 
+ */
+public class BigInteger {
+
+	/**
+	 * True if this is a negative integer
+	 */
+	boolean negative;
+	
+	/**
+	 * Number of digits in this integer
+	 */
+	int numDigits;
+	
+	/**
+	 * Reference to the first node of this integer's linked list representation
+	 * NOTE: The linked list stores the Least Significant Digit in the FIRST node.
+	 * For instance, the integer 235 would be stored as:
+	 *    5 --> 3	 --> 2
+	 */
+	DigitNode front;
+	
+	/**
+	 * Initializes this integer to a positive number with zero digits, in other
+	 * words this is the 0 (zero) valued integer.
+	 */
+	public BigInteger() {
+		negative = false;
+		numDigits = 0;
+		front = null;
+	}
+	
+	/**
+	 * Parses an input integer string into a corresponding BigInteger instance.
+	 * A correctly formatted integer would have an optional sign as the first 
+	 * character (no sign means positive), and at least one digit character
+	 * (including zero). 
+	 * Examples of correct format, with corresponding values
+	 *      Format     Value
+	 *       +0            0
+	 *       -0            0
+	 *       +123        123
+	 *       1023       1023
+	 *       0012         12  
+	 *       0             0
+	 *       -123       -123
+	 *       -001         -1
+	 *       +000          0
+	 *       
+	 * 
+	 * @param integer Integer string that is to be parsed
+	 * @return BigInteger instance that stores the input integer
+	 * @throws IllegalArgumentException If input is incorrectly formatted
+	 */
+	
+	public static BigInteger parse(String integer) 
+	throws IllegalArgumentException {
+		//initialize BigInteger to be parsed 
+		BigInteger other = new BigInteger();
+		int zeroes = 0;
+		
+		//check if there is a positive or negative sign in inputted integer
+		if(!Character.isDigit(integer.charAt(0))){
+			if(integer.charAt(0) == '+'){
+				other.negative = false;
+			}else if(integer.charAt(0) == '-'){
+				other.negative = true; 
+			} else{
+				throw new IllegalArgumentException();
+			}
+		integer = integer.substring(1,integer.length());
+		}
+		
+		
+		
+		//for loop to check and remove any zeroes before actual number
+		for(int i =0;i<integer.length();i++){
+			if(integer.charAt(i)!= '0'){
+				integer = integer.substring(zeroes);
+				break;
+			} else{
+				zeroes++;
+			}
+		}
+		
+		//for loop to create BigInteger Nodes 
+		for(int i=0;i<integer.length();i++){
+			if(Character.isDigit(integer.charAt(i))){
+				int digit = Integer.parseInt(integer.substring(i, i+1));
+				other.front = new DigitNode(digit,other.front);
+				other.numDigits ++;
+			} else{
+				throw new IllegalArgumentException(); 
+			}
+		
+		}
+		for (DigitNode ptr = other.front; ptr != null; ptr = ptr.next) {
+			System.out.print(ptr.digit + " - > "); 
+		}
+		
+		return other;
+}
+		
+	
+	
+		
+	/**
+	 * Adds an integer to this integer, and returns the result in a NEW BigInteger object. 
+	 * DOES NOT MODIFY this integer.
+	 * NOTE that either or both of the integers involved could be negative.
+	 * (Which means this method can effectively subtract as well.)
+	 * 
+	 * @param other Other integer to be added to this integer
+	 * @return Result integer
+	 */
+	
+	
+	
+	public BigInteger add(BigInteger other) {
+		//Initialize added BigInteger
+		//Cases: Both integers same sign or opposite signs 
+		 BigInteger add = new BigInteger();
+		 DigitNode ptr1 = this.front;
+		 DigitNode ptr2 = other.front; 
+		 int digit1 = 0;
+		 int digit2 = 0;
+		 int sum = 0;
+		 int carry = 0;
+		 
+		 //Case for both the same sign 
+		 if(other.negative == this.negative){
+			 add.negative = this.negative;
+			 while(ptr1 !=null || ptr2 !=null){
+				 if(ptr1 ==null){
+					 digit1 = 0;
+				 } else{
+					 digit1 = ptr1.digit;
+				 }
+				 if(ptr2 == null){
+					 digit2 = 0;
+				 } else{
+					 digit2 = ptr2.digit;
+				 }
+				 sum = digit1 + digit2 + carry;
+				 //if sum of digits are greater than 9, carry over to next digit sum
+				 if(sum > 9){
+					 sum = sum%10;
+					 carry = 1;	
+				 } else{
+					 carry = 0;
+				 }
+				 if(add.numDigits == 0){
+					 add.front = new DigitNode(sum,add.front);
+				 }
+				 else{
+					 DigitNode ptr = new DigitNode(sum,add.front);
+					 while(ptr.next !=null){
+						 ptr = ptr.next;
+					 }
+					 ptr.next = new DigitNode(sum,null);
+				 }
+				 add.numDigits ++;
+				 
+				 if(ptr1 != null){
+					 ptr1 = ptr1.next;
+				 }
+				 if(ptr2 != null){
+					 ptr2 = ptr2.next;
+				 }
+			 }
+				for (DigitNode ptr = add.front; ptr != null; ptr = ptr.next) {
+					System.out.print(ptr.digit + " - > ");
+				}
+				System.out.println();
+			
+				
+		 }
+		
+		 
+		 //Case for opposite signs 
+		 if(this.negative != other.negative){
+			 //if digit1<digit2, add 10 to digit1(since always doing first integer +- second integer) and then decrement next digit in ptr
+			 boolean isLess = false; 
+				 while(ptr1 != null || ptr2 != null){
+					 if(ptr1 == null){
+						 digit1 = 0;
+					 } else{
+						 digit1 = ptr1.digit;
+					 }
+					 if(ptr2 == null){
+						 digit2 = 0;
+					 } else{
+						 digit2 = ptr2.digit;
+					 }
+					 //if top digit is less than bottom digit
+					 if(isLess == true){
+						 //subtract one from next top digit if previous top digit was less than bottom digit 
+						 digit1 = digit1 - 1; 
+					 }
+					 if(digit1 < digit2){
+						 sum = (digit1 + 10)-digit2;
+						 isLess = true; 
+					 }else if (digit1 == digit2){
+						 sum = 0;
+						 isLess = false;
+				 	 }else{
+				 		 sum = digit1 - digit2;
+				 		 isLess = false; 
+					
+				 }
+				 
+				 if(add.numDigits == 0){
+					 add.front = new DigitNode(sum,add.front);
+				 }
+				 else{
+					 DigitNode ptr = new DigitNode(sum,add.front);
+					 while(ptr.next !=null){
+						 ptr = ptr.next;
+					 }
+					 ptr.next = new DigitNode(sum,null);
+				 }
+				 add.numDigits ++;
+				 
+				 if(ptr1 != null){
+					 ptr1 = ptr1.next;
+				 }
+				 if(ptr2 != null){
+					 ptr2 = ptr2.next;
+				 }
+			 }
+			 add.negative = this.negative;
+			 //if there is no next digit, meaning add will be positive
+			 
+			 
+			 for (DigitNode ptr = add.front; ptr != null; ptr = ptr.next) {
+					System.out.print(ptr.digit + " - > ");
+			 }
+		 }
+	//get rid of trailing zeroes before full integer
+	for(DigitNode ptr = add.front;ptr!= null;ptr = ptr.next){
+		int zeroes =0;
+		if(ptr.digit == 0){
+			zeroes ++;
+			continue; 
+			}
+		if(ptr.digit !=0){
+			add.numDigits = add.numDigits - zeroes; 
+		}
+	}
+	return add;
+	}
+	
+	
+	
+	
+	
+	/**
+	 * Returns the BigInteger obtained by multiplying the given BigInteger
+	 * with this BigInteger - DOES NOT MODIFY this BigInteger
+	 * 
+	 * @param other BigInteger to be multiplied
+	 * @return A new BigInteger which is the product of this BigInteger and other.
+	 */
+	
+	
+	
+	
+	public BigInteger multiply(BigInteger other) {
+		//initialize return variable 
+				BigInteger product = new BigInteger(); 
+				DigitNode ptr1 = this.front;
+				DigitNode ptr2 = other.front;
+				int prod = 0; 
+				int carry = 0;
+				//used for each line of multiplication(also used to count zeroes)
+				int line = 0;
+				//iterate through both linked lists(go through one linked list fully and only one digit of the other at a time)
+				while(ptr1 !=null){
+					//for each line, create new big integer that will be added together after every line has been finished
+					BigInteger addUp = new BigInteger();
+					while(ptr2 !=null){
+						prod = ptr1.digit * ptr2.digit + carry;
+						//if greater than 9, carry over to next digit
+						if(prod >9){
+							//int will always get rounded down
+							carry = prod/10;
+							prod = prod%10;
+						}
+						else{ 
+							carry = 0;
+						}
+						if(addUp.numDigits == 0){
+						//initialize addUp since it has no digits yet and start at front
+							addUp.front = new DigitNode(prod,addUp.front);
+						}
+						else{
+							DigitNode tmp = addUp.front;
+							while(tmp.next != null){
+								tmp = tmp.next;
+							}
+							tmp.next = new DigitNode(prod,null);
+						//increment addup digits everytime ptr2 is incremented 
+						}
+						addUp.numDigits++;
+						ptr2 = ptr2.next;
+					}
+					//one zero for each line (initial line at index 0)
+					int countZeroes = line;
+					//go to next line if countzeroes is 1, and so on(each line adds an additional 0)
+					while(countZeroes>0){
+						//create new Biginteger addUp for next line/new zero
+						addUp.front = new DigitNode(0,addUp.front);
+						addUp.numDigits++;
+						countZeroes--;
+					}
+					//if carry is still at the end, add to end node fully(if digit1 is at the end, add the carry to it without any new carries)
+					if(carry>0){
+						DigitNode tmp = addUp.front;
+						while(tmp.next !=null){
+							//iterate through tmp to find end node to add carry 
+							tmp = tmp.next;
+						}
+						tmp.next = new DigitNode(carry, null);
+						addUp.numDigits++;
+					}
+					//add up all lines 
+					product = product.add(addUp);
+					//reset the carry
+					carry = 0;
+					//iterate through lines
+					line++;
+					//iterate through outer loop pointer 
+					ptr1 = ptr1.next;
+					//reset inner loop pointer back to front after each new line so you can restart multiplication
+					ptr2 = other.front; 
+				}
+					//check for signs 
+					//same signs
+					if(this.negative == true && other.negative == true || this.negative == false && this.negative == true){
+						product.negative = false;
+					} 
+					//different signs
+					else if(this.negative == true && other.negative == false || this.negative == false && other.negative == true){
+						product.negative = true; 
+					}
+				return product;
+			}
+		
+		
+		
+		
+		
+		
+		
+		
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		if (front == null) {
+			return "0";
+		}
+		
+		String retval = front.digit + "";
+		for (DigitNode curr = front.next; curr != null; curr = curr.next) {
+				retval = curr.digit + retval;
+		}
+		
+		if (negative) {
+			retval = '-' + retval;
+		}
+		
+		return retval;
+	}
+	
+}
